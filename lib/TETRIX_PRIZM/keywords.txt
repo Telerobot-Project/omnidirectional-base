@@ -1,0 +1,62 @@
+#######################################
+# Syntax Coloring Map For PRIZM CONTROLLER 
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+	
+PRIZM			KEYWORD1	PRIZM
+EXPANSION		KEYWORD1	EXPANSION
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+readDCFirmware	KEYWORD2
+readSVOFirmware	KEYWORD2
+setMotorSpeedPID	KEYWORD2
+setMotorTargetPID	KEYWORD2
+setMotorPower	KEYWORD2
+setMotorPowers	KEYWORD2
+setMotorSpeed	KEYWORD2
+setMotorSpeeds	KEYWORD2
+setMotorTarget	KEYWORD2
+setMotorTargets	KEYWORD2
+setMotorDegree	KEYWORD2
+setMotorDegrees	KEYWORD2
+setMotorInvert	KEYWORD2
+readMotorBusy	KEYWORD2
+readMotorCurrent	KEYWORD2
+readEncoderCount	KEYWORD2
+readEncoderDegrees	KEYWORD2
+resetEncoder	KEYWORD2
+resetEncoders	KEYWORD2
+readLineSensor	KEYWORD2
+readSonicSensorCM	KEYWORD2
+readSonicSensorIN	KEYWORD2
+readBatteryVoltage	KEYWORD2
+readStartButton	KEYWORD2
+PrizmBegin	KEYWORD2
+PrizmEnd	KEYWORD2
+setGreenLED	KEYWORD2
+setRedLED	KEYWORD2
+setServoSpeed	KEYWORD2
+setServoSpeeds	KEYWORD2
+setServoPosition	KEYWORD2
+setServoPositions	KEYWORD2
+setCRServoState	KEYWORD2
+readServoPosition	KEYWORD2
+setExpID	KEYWORD2
+readExpID	KEYWORD2
+WDT_STOP	KEYWORD2
+controllerEnable	KEYWORD2
+controllerReset		KEYWORD2
+
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
