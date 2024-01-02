@@ -20,58 +20,64 @@
 #include <Wire.h>
 #include "PRIZM.h"
 
-//PICO
+// PICO
 #include <hardware/watchdog.h>
-
 // #include "utility/WSWire.h"
+
+
+// Wire was changed to Wire1 
+#define WIRE1_SDA       2  // Use GP2 as I2C1 SDA
+#define WIRE1_SCL       3  // Use GP3 as I2C1 SCL
+arduino::MbedI2C Wire1(WIRE1_SDA, WIRE1_SCL);
+
 
 void EXPANSION::controllerEnable(int address)
 {
-  Wire.beginTransmission(address); // Send an "Enable" Byte to EXPANSION controller at address/ID
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address); // Send an "Enable" Byte to EXPANSION controller at address/ID
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(25);
 }
 
 void EXPANSION::controllerReset(int address)
 {
 
-  Wire.beginTransmission(address); // Send an "reset" Byte to EXPANSION controller at address/ID
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address); // Send an "reset" Byte to EXPANSION controller at address/ID
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(25);
 }
 
 void EXPANSION::WDT_STOP(int address)
 { //===== This forces a watch dog timer HARD STOP on the expansion controller at address #
 
-  Wire.beginTransmission(address);
-  Wire.write(0x23);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x23);
+  Wire1.endTransmission();
   delay(50);
 }
 
 void EXPANSION::setExpID(int newID)
 {            // === command to change ID/ I2C address of a TETRIX Expansion DC or Servo Controller.
              // There can only be one expansion box connected to PRIZM when changing ID's.
-  int oldID; // No other I2C devices can be connected to sensor ports when executing this command.
+  int oldID = 1; // No other I2C devices can be connected to sensor ports when executing this command.
 
   for (int i = 1; i < 120; i++)
   { // Spin up I2C addresses from 1 - 120
 
-    Wire.beginTransmission(i);
+    Wire1.beginTransmission(i);
 
-    if ((Wire.endTransmission() == 0) && ((i < 5) || (i > 6))) // Capture response from expansion controller (ignore 5 and 6 - they are used by PRIZM)
+    if ((Wire1.endTransmission() == 0) && ((i < 5) || (i > 6))) // Capture response from expansion controller (ignore 5 and 6 - they are used by PRIZM)
     {
       oldID = i;
       delay(10);
     }
   }
 
-  Wire.beginTransmission(oldID); // Send new ID/address to the found Expansion Controller
-  Wire.write(0x24);
-  Wire.write(newID);
-  Wire.endTransmission();
+  Wire1.beginTransmission(oldID); // Send new ID/address to the found Expansion Controller
+  Wire1.write(0x24);
+  Wire1.write(newID);
+  Wire1.endTransmission();
   delay(10);
 
   pinMode(6, OUTPUT);    //===== RED LED is on pin 6
@@ -87,14 +93,14 @@ void EXPANSION::setExpID(int newID)
 int EXPANSION::readExpID()
 {         // === command to get the I2C address / ID from a TETRIX DC or Servo Expansion Controller
           // There can only be one expansion box connected to PRIZM when using this function
-  int ID; // All other I2C devices must also be disconnected from sensor ports when using this function
+  int ID = 1; // All other I2C devices must also be disconnected from sensor ports when using this function
 
   for (int i = 1; i < 120; i++)
   { // Spin up I2C addresses from 1 - 120
 
-    Wire.beginTransmission(i);
+    Wire1.beginTransmission(i);
 
-    if ((Wire.endTransmission() == 0) && ((i < 5) || (i > 6))) // Capture response from expansion controller (ignore 5 and 6 - they are used by PRIZM)
+    if ((Wire1.endTransmission() == 0) && ((i < 5) || (i > 6))) // Capture response from expansion controller (ignore 5 and 6 - they are used by PRIZM)
     {
       ID = i;
       delay(10);
@@ -121,15 +127,15 @@ void PRIZM::setMotorSpeedPID(int P, int I, int D)
   lobyteD = lowByte(D);
   hibyteD = highByte(D);
 
-  Wire.beginTransmission(5);
-  Wire.write(0X56);
-  Wire.write(hibyteP);
-  Wire.write(lobyteP);
-  Wire.write(hibyteI);
-  Wire.write(lobyteI);
-  Wire.write(hibyteD);
-  Wire.write(lobyteD);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0X56);
+  Wire1.write(hibyteP);
+  Wire1.write(lobyteP);
+  Wire1.write(hibyteI);
+  Wire1.write(lobyteI);
+  Wire1.write(hibyteD);
+  Wire1.write(lobyteD);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -150,15 +156,15 @@ void EXPANSION::setMotorSpeedPID(int address, int P, int I, int D)
   lobyteD = lowByte(D);
   hibyteD = highByte(D);
 
-  Wire.beginTransmission(address);
-  Wire.write(0X56);
-  Wire.write(hibyteP);
-  Wire.write(lobyteP);
-  Wire.write(hibyteI);
-  Wire.write(lobyteI);
-  Wire.write(hibyteD);
-  Wire.write(lobyteD);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0X56);
+  Wire1.write(hibyteP);
+  Wire1.write(lobyteP);
+  Wire1.write(hibyteI);
+  Wire1.write(lobyteI);
+  Wire1.write(hibyteD);
+  Wire1.write(lobyteD);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -179,15 +185,15 @@ void PRIZM::setMotorTargetPID(int P, int I, int D)
   lobyteD = lowByte(D);
   hibyteD = highByte(D);
 
-  Wire.beginTransmission(5); // transmit to DC address
-  Wire.write(0X57);
-  Wire.write(hibyteP);
-  Wire.write(lobyteP);
-  Wire.write(hibyteI);
-  Wire.write(lobyteI);
-  Wire.write(hibyteD);
-  Wire.write(lobyteD);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5); // transmit to DC address
+  Wire1.write(0X57);
+  Wire1.write(hibyteP);
+  Wire1.write(lobyteP);
+  Wire1.write(hibyteI);
+  Wire1.write(lobyteI);
+  Wire1.write(hibyteD);
+  Wire1.write(lobyteD);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -208,15 +214,15 @@ void EXPANSION::setMotorTargetPID(int address, int P, int I, int D)
   lobyteD = lowByte(D);
   hibyteD = highByte(D);
 
-  Wire.beginTransmission(address);
-  Wire.write(0X57);
-  Wire.write(hibyteP);
-  Wire.write(lobyteP);
-  Wire.write(hibyteI);
-  Wire.write(lobyteI);
-  Wire.write(hibyteD);
-  Wire.write(lobyteD);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0X57);
+  Wire1.write(hibyteP);
+  Wire1.write(lobyteP);
+  Wire1.write(hibyteI);
+  Wire1.write(lobyteI);
+  Wire1.write(hibyteD);
+  Wire1.write(lobyteD);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -226,12 +232,12 @@ int PRIZM::readDCFirmware()
   int byte1;
   int DCversion;
 
-  Wire.beginTransmission(5);
-  Wire.write(0x26);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x26);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(5, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(5, 1);
+  byte1 = Wire1.read();
   DCversion = byte1;
   delay(10);
   return DCversion;
@@ -243,12 +249,12 @@ int EXPANSION::readDCFirmware(int address)
   int byte1;
   int DCversion;
 
-  Wire.beginTransmission(address);
-  Wire.write(0x26);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x26);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(address, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(address, 1);
+  byte1 = Wire1.read();
   DCversion = byte1;
   delay(10);
   return DCversion;
@@ -260,12 +266,12 @@ int PRIZM::readSVOFirmware()
   int byte1;
   int SVOversion;
 
-  Wire.beginTransmission(6);
-  Wire.write(0x26);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x26);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(6, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(6, 1);
+  byte1 = Wire1.read();
   SVOversion = byte1;
   delay(10);
   return SVOversion;
@@ -277,12 +283,12 @@ int EXPANSION::readSVOFirmware(int address)
   int byte1;
   int SVOversion;
 
-  Wire.beginTransmission(address);
-  Wire.write(0x26);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x26);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(address, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(address, 1);
+  byte1 = Wire1.read();
   SVOversion = byte1;
   delay(10);
 
@@ -291,34 +297,34 @@ int EXPANSION::readSVOFirmware(int address)
 
 void PRIZM::PrizmBegin()
 { //======= Send a SW reset to all EXPANSIONansion port I2C
-  Wire.begin();
-  // Wire.setSDA();
+  Wire1.begin();
+  // Wire1.setSDA();
 
   delay(500);                // Give EXPANSION controllers time to reset
                              // SW reset on Expansion and DC + Servo chips at addresses 5 and 6 (7 is not used)
-  Wire.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4 (4 boxes total)
-  Wire.write(0x27);          // If additional boxes above that are added at different addresses, 0x27 writes for each need to be added as well.
-  Wire.endTransmission();    // No guarantee that more than 4 boxes will work on single I2C bus because of cable capacitance
+  Wire1.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4 (4 boxes total)
+  Wire1.write(0x27);          // If additional boxes above that are added at different addresses, 0x27 writes for each need to be added as well.
+  Wire1.endTransmission();    // No guarantee that more than 4 boxes will work on single I2C bus because of cable capacitance
   delay(10);
-  Wire.beginTransmission(6);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(1);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(1);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(2);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(2);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(3);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(3);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(4);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(4);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
 
   setGreenLED(HIGH); // Turn on when we're reset
@@ -327,85 +333,85 @@ void PRIZM::PrizmBegin()
   };                // wait for the program start (green) button pressed
   setGreenLED(LOW); // turn green off
 
-  Wire.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4 (4 boxes total)
-  Wire.write(0x27);          // Do a reset on Expansions and PRIZM Motor chips after green button start
-  Wire.endTransmission();    // If additional boxes above that are added at different addresses, 0x27 writes for each need to be added as well.
+  Wire1.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4 (4 boxes total)
+  Wire1.write(0x27);          // Do a reset on Expansions and PRIZM Motor chips after green button start
+  Wire1.endTransmission();    // If additional boxes above that are added at different addresses, 0x27 writes for each need to be added as well.
   delay(10);                 // No guarantee that more than 4 boxes will work on single I2C bus because of cable capacitance
-  Wire.beginTransmission(6);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(1);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(1);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(2);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(2);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(3);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(3);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(4);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(4);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
 
   delay(1000); // 1 second delay between time GO button is pushed and program starts gives time for resets
 
-  Wire.beginTransmission(5); // Send an "Enable" Byte to DC and Servo controller chips and EXPANSIONansion controllers
-  Wire.write(0x25);          // enable command so that the robots won't move without a PrizmBegin statement
-  Wire.endTransmission();
+  Wire1.beginTransmission(5); // Send an "Enable" Byte to DC and Servo controller chips and EXPANSIONansion controllers
+  Wire1.write(0x25);          // enable command so that the robots won't move without a PrizmBegin statement
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(6);
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(1);
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(1);
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(2);
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(2);
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(3);
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(3);
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(4);
-  Wire.write(0x25);
-  Wire.endTransmission();
+  Wire1.beginTransmission(4);
+  Wire1.write(0x25);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void PRIZM::PrizmEnd()
 { //======= Send a SW reset to all I2C devices(resets everything) This is done mainly to stop all motors
 
-  Wire.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4
-  Wire.write(0x27);          // 5 and 6 is PRIZM DC and Servo chips
-  Wire.endTransmission();
+  Wire1.beginTransmission(5); // Supported I2C addresses for EXPANSIONansion controllers is 1 - 4
+  Wire1.write(0x27);          // 5 and 6 is PRIZM DC and Servo chips
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(6);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(1);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(1);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(2);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(2);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(3);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(3);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
-  Wire.beginTransmission(4);
-  Wire.write(0x27);
-  Wire.endTransmission();
+  Wire1.beginTransmission(4);
+  Wire1.write(0x27);
+  Wire1.endTransmission();
   delay(10);
 
   // PICO
@@ -431,14 +437,14 @@ int EXPANSION::readBatteryVoltage(int address)
   byte byte1;
   byte byte2;
 
-  Wire.beginTransmission(address);
-  Wire.write(0x53);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x53);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(address, 2);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
+  Wire1.requestFrom(address, 2);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
   Bvoltage = byte1;
   Bvoltage = (Bvoltage * 256) + byte2;
   delay(10);
@@ -555,10 +561,10 @@ void PRIZM::setServoSpeed(int channel, int servospeed)
     channel = 0x2D;
   }
 
-  Wire.beginTransmission(6);
-  Wire.write(channel);
-  Wire.write(servospeed);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(channel);
+  Wire1.write(servospeed);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -590,40 +596,40 @@ void EXPANSION::setServoSpeed(int address, int channel, int servospeed)
     channel = 0x2D;
   }
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(servospeed);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(servospeed);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void PRIZM::setServoSpeeds(int servospeed1, int servospeed2, int servospeed3, int servospeed4, int servospeed5, int servospeed6)
 { // function to set all PRIZM servo speeds at once
 
-  Wire.beginTransmission(6);
-  Wire.write(0x2E);
-  Wire.write(servospeed1);
-  Wire.write(servospeed2);
-  Wire.write(servospeed3);
-  Wire.write(servospeed4);
-  Wire.write(servospeed5);
-  Wire.write(servospeed6);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x2E);
+  Wire1.write(servospeed1);
+  Wire1.write(servospeed2);
+  Wire1.write(servospeed3);
+  Wire1.write(servospeed4);
+  Wire1.write(servospeed5);
+  Wire1.write(servospeed6);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void EXPANSION::setServoSpeeds(int address, int servospeed1, int servospeed2, int servospeed3, int servospeed4, int servospeed5, int servospeed6)
 { // function to set all EXPANSIONANSION servo speeds at once
 
-  Wire.beginTransmission(address);
-  Wire.write(0x2E);
-  Wire.write(servospeed1);
-  Wire.write(servospeed2);
-  Wire.write(servospeed3);
-  Wire.write(servospeed4);
-  Wire.write(servospeed5);
-  Wire.write(servospeed6);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x2E);
+  Wire1.write(servospeed1);
+  Wire1.write(servospeed2);
+  Wire1.write(servospeed3);
+  Wire1.write(servospeed4);
+  Wire1.write(servospeed5);
+  Wire1.write(servospeed6);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -677,24 +683,24 @@ void PRIZM::setServoPosition(int channel, int servoposition)
     if(channel==6){channel= 0x34;}
 
 
-    Wire.beginTransmission(6);
-    Wire.write(channel);
-    Wire.write(servoposition);
-    Wire.endTransmission();
+    Wire1.beginTransmission(6);
+    Wire1.write(channel);
+    Wire1.write(servoposition);
+    Wire1.endTransmission();
     delay(10);
    */
 
   if (xmit == 1)
   {                            // no need to send if positions have not changed - result frees up I2C bus
-    Wire.beginTransmission(6); // Even though this is a single position command, sending all channels at once works around minor servo glitching in version 1 PRIZM servo chip firmware.
-    Wire.write(0x35);
-    Wire.write(lastPosition_1);
-    Wire.write(lastPosition_2);
-    Wire.write(lastPosition_3);
-    Wire.write(lastPosition_4);
-    Wire.write(lastPosition_5);
-    Wire.write(lastPosition_6);
-    Wire.endTransmission();
+    Wire1.beginTransmission(6); // Even though this is a single position command, sending all channels at once works around minor servo glitching in version 1 PRIZM servo chip firmware.
+    Wire1.write(0x35);
+    Wire1.write(lastPosition_1);
+    Wire1.write(lastPosition_2);
+    Wire1.write(lastPosition_3);
+    Wire1.write(lastPosition_4);
+    Wire1.write(lastPosition_5);
+    Wire1.write(lastPosition_6);
+    Wire1.endTransmission();
     delay(10);
     xmit = 0;
   }
@@ -728,10 +734,10 @@ void EXPANSION::setServoPosition(int address, int channel, int servoposition)
     channel = 0x34;
   }
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(servoposition);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(servoposition);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -745,30 +751,30 @@ void PRIZM::setServoPositions(int servoposition1, int servoposition2, int servop
   lastPosition_5 = servoposition5;
   lastPosition_6 = servoposition6;
 
-  Wire.beginTransmission(6);
-  Wire.write(0x35);
-  Wire.write(servoposition1);
-  Wire.write(servoposition2);
-  Wire.write(servoposition3);
-  Wire.write(servoposition4);
-  Wire.write(servoposition5);
-  Wire.write(servoposition6);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(0x35);
+  Wire1.write(servoposition1);
+  Wire1.write(servoposition2);
+  Wire1.write(servoposition3);
+  Wire1.write(servoposition4);
+  Wire1.write(servoposition5);
+  Wire1.write(servoposition6);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void EXPANSION::setServoPositions(int address, int servoposition1, int servoposition2, int servoposition3, int servoposition4, int servoposition5, int servoposition6)
 { // Sets all EXPANSIONANSION servo positions at once
 
-  Wire.beginTransmission(address);
-  Wire.write(0x35);
-  Wire.write(servoposition1);
-  Wire.write(servoposition2);
-  Wire.write(servoposition3);
-  Wire.write(servoposition4);
-  Wire.write(servoposition5);
-  Wire.write(servoposition6);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x35);
+  Wire1.write(servoposition1);
+  Wire1.write(servoposition2);
+  Wire1.write(servoposition3);
+  Wire1.write(servoposition4);
+  Wire1.write(servoposition5);
+  Wire1.write(servoposition6);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -784,10 +790,10 @@ void PRIZM::setCRServoState(int channel, int servospeed)
     channel = 0x37;
   } // CRservo 2
 
-  Wire.beginTransmission(6);
-  Wire.write(channel);
-  Wire.write(servospeed);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(channel);
+  Wire1.write(servospeed);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -803,10 +809,10 @@ void EXPANSION::setCRServoState(int address, int channel, int servospeed)
     channel = 0x37;
   } // CRservo 2
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(servospeed);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(servospeed);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -840,12 +846,12 @@ int PRIZM::readServoPosition(int channel)
     channel = 0x3D;
   }
 
-  Wire.beginTransmission(6);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(6);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(6, 1);
-  readServoPosition = Wire.read();
+  Wire1.requestFrom(6, 1);
+  readServoPosition = Wire1.read();
   delay(10);
   return readServoPosition;
 }
@@ -880,12 +886,12 @@ int EXPANSION::readServoPosition(int address, int channel)
     channel = 0x3D;
   }
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
-  Wire.requestFrom(address, 1);
-  readServoPosition = Wire.read();
+  Wire1.requestFrom(address, 1);
+  readServoPosition = Wire1.read();
   delay(10);
   return readServoPosition;
 }
@@ -902,10 +908,10 @@ void PRIZM::setMotorPower(int channel, int power) // set Motor Channel power on 
     channel = 0x41;
   } // DC channel 2
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.write(power);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.write(power);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -921,32 +927,32 @@ void EXPANSION::setMotorPower(int address, int channel, int power) // set Motor 
     channel = 0x41;
   } // DC channel 2
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(power);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(power);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void PRIZM::setMotorPowers(int power1, int power2)
 { // power only Block Command for PRIZM Motor 1 and 2 (both in one transmission)
 
-  Wire.beginTransmission(5);
-  Wire.write(0x42);
-  Wire.write(power1);
-  Wire.write(power2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x42);
+  Wire1.write(power1);
+  Wire1.write(power2);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void EXPANSION::setMotorPowers(int address, int power1, int power2)
 { // power only Block Command for EXPANSIONANSION Motor 1 and 2 (both in one transmission)
 
-  Wire.beginTransmission(address);
-  Wire.write(0x42);
-  Wire.write(power1);
-  Wire.write(power2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x42);
+  Wire1.write(power1);
+  Wire1.write(power2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -968,11 +974,11 @@ void PRIZM::setMotorSpeed(int channel, long Mspeed)
     channel = 0x44;
   } // DC channel 2
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -994,11 +1000,11 @@ void EXPANSION::setMotorSpeed(int address, int channel, long Mspeed)
     channel = 0x44;
   } // DC channel 2
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1017,13 +1023,13 @@ void PRIZM::setMotorSpeeds(long Mspeed1, long Mspeed2)
   lobyte2 = lowByte(Mspeed2);
   hibyte2 = highByte(Mspeed2);
 
-  Wire.beginTransmission(5);
-  Wire.write(0x45);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x45);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1042,13 +1048,13 @@ void EXPANSION::setMotorSpeeds(int address, long Mspeed1, long Mspeed2)
   lobyte2 = lowByte(Mspeed2);
   hibyte2 = highByte(Mspeed2);
 
-  Wire.beginTransmission(address);
-  Wire.write(0x45);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x45);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1075,15 +1081,15 @@ void PRIZM::setMotorTarget(int channel, long Mspeed, long Mtarget)
     channel = 0x47;
   } // DC channel 2
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.write(one);
-  Wire.write(two);
-  Wire.write(three);
-  Wire.write(four);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.write(one);
+  Wire1.write(two);
+  Wire1.write(three);
+  Wire1.write(four);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1110,15 +1116,15 @@ void EXPANSION::setMotorTarget(int address, int channel, long Mspeed, long Mtarg
     channel = 0x47;
   } // DC channel 2
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.write(one);
-  Wire.write(two);
-  Wire.write(three);
-  Wire.write(four);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.write(one);
+  Wire1.write(two);
+  Wire1.write(three);
+  Wire1.write(four);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1147,21 +1153,21 @@ void PRIZM::setMotorTargets(long Mspeed1, long Mtarget1, long Mspeed2, long Mtar
   byte two2 = (Mtarget2 >> 16);
   byte one2 = (Mtarget2 >> 24);
 
-  Wire.beginTransmission(5);
-  Wire.write(0x48);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(one1);
-  Wire.write(two1);
-  Wire.write(three1);
-  Wire.write(four1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.write(one2);
-  Wire.write(two2);
-  Wire.write(three2);
-  Wire.write(four2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x48);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(one1);
+  Wire1.write(two1);
+  Wire1.write(three1);
+  Wire1.write(four1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.write(one2);
+  Wire1.write(two2);
+  Wire1.write(three2);
+  Wire1.write(four2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1190,21 +1196,21 @@ void EXPANSION::setMotorTargets(int address, long Mspeed1, long Mtarget1, long M
   byte two2 = (Mtarget2 >> 16);
   byte one2 = (Mtarget2 >> 24);
 
-  Wire.beginTransmission(address);
-  Wire.write(0x48);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(one1);
-  Wire.write(two1);
-  Wire.write(three1);
-  Wire.write(four1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.write(one2);
-  Wire.write(two2);
-  Wire.write(three2);
-  Wire.write(four2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x48);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(one1);
+  Wire1.write(two1);
+  Wire1.write(three1);
+  Wire1.write(four1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.write(one2);
+  Wire1.write(two2);
+  Wire1.write(three2);
+  Wire1.write(four2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1231,15 +1237,15 @@ void PRIZM::setMotorDegree(int channel, long Mspeed, long Mdegrees)
     channel = 0x59;
   }
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.write(one);
-  Wire.write(two);
-  Wire.write(three);
-  Wire.write(four);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.write(one);
+  Wire1.write(two);
+  Wire1.write(three);
+  Wire1.write(four);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1266,15 +1272,15 @@ void EXPANSION::setMotorDegree(int address, int channel, long Mspeed, long Mdegr
     channel = 0x59;
   }
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(hibyte);
-  Wire.write(lobyte);
-  Wire.write(one);
-  Wire.write(two);
-  Wire.write(three);
-  Wire.write(four);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(hibyte);
+  Wire1.write(lobyte);
+  Wire1.write(one);
+  Wire1.write(two);
+  Wire1.write(three);
+  Wire1.write(four);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1303,21 +1309,21 @@ void PRIZM::setMotorDegrees(long Mspeed1, long Mdegrees1, long Mspeed2, long Mde
   byte two2 = (Mdegrees2 >> 16);
   byte one2 = (Mdegrees2 >> 24);
 
-  Wire.beginTransmission(5);
-  Wire.write(0x5A);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(one1);
-  Wire.write(two1);
-  Wire.write(three1);
-  Wire.write(four1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.write(one2);
-  Wire.write(two2);
-  Wire.write(three2);
-  Wire.write(four2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x5A);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(one1);
+  Wire1.write(two1);
+  Wire1.write(three1);
+  Wire1.write(four1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.write(one2);
+  Wire1.write(two2);
+  Wire1.write(three2);
+  Wire1.write(four2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1346,21 +1352,21 @@ void EXPANSION::setMotorDegrees(int address, long Mspeed1, long Mdegrees1, long 
   byte two2 = (Mdegrees2 >> 16);
   byte one2 = (Mdegrees2 >> 24);
 
-  Wire.beginTransmission(address);
-  Wire.write(0x5A);
-  Wire.write(hibyte1);
-  Wire.write(lobyte1);
-  Wire.write(one1);
-  Wire.write(two1);
-  Wire.write(three1);
-  Wire.write(four1);
-  Wire.write(hibyte2);
-  Wire.write(lobyte2);
-  Wire.write(one2);
-  Wire.write(two2);
-  Wire.write(three2);
-  Wire.write(four2);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x5A);
+  Wire1.write(hibyte1);
+  Wire1.write(lobyte1);
+  Wire1.write(one1);
+  Wire1.write(two1);
+  Wire1.write(three1);
+  Wire1.write(four1);
+  Wire1.write(hibyte2);
+  Wire1.write(lobyte2);
+  Wire1.write(one2);
+  Wire1.write(two2);
+  Wire1.write(three2);
+  Wire1.write(four2);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1383,16 +1389,16 @@ long PRIZM::readEncoderCount(int channel)
     channel = 0x4A;
   } // channel 2 encoder FOR count value
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(5, 4);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
-  byte3 = Wire.read();
-  byte4 = Wire.read();
+  Wire1.requestFrom(5, 4);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
+  byte3 = Wire1.read();
+  byte4 = Wire1.read();
 
   eCount = byte1;
   eCount = (eCount * 256) + byte2;
@@ -1421,16 +1427,16 @@ long EXPANSION::readEncoderCount(int address, int channel)
     channel = 0x4A;
   } // channel 2 encoder FOR count value
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(address, 4);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
-  byte3 = Wire.read();
-  byte4 = Wire.read();
+  Wire1.requestFrom(address, 4);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
+  byte3 = Wire1.read();
+  byte4 = Wire1.read();
 
   eCount = byte1;
   eCount = (eCount * 256) + byte2;
@@ -1459,16 +1465,16 @@ long PRIZM::readEncoderDegrees(int channel)
     channel = 0x5C;
   } // channel 2 encoder FOR degrees
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(5, 4);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
-  byte3 = Wire.read();
-  byte4 = Wire.read();
+  Wire1.requestFrom(5, 4);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
+  byte3 = Wire1.read();
+  byte4 = Wire1.read();
 
   eCount = byte1;
   eCount = (eCount * 256) + byte2;
@@ -1497,16 +1503,16 @@ long EXPANSION::readEncoderDegrees(int address, int channel)
     channel = 0x5C;
   } // channel 2 encoder FOR degrees
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(address, 4);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
-  byte3 = Wire.read();
-  byte4 = Wire.read();
+  Wire1.requestFrom(address, 4);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
+  byte3 = Wire1.read();
+  byte4 = Wire1.read();
 
   eCount = byte1;
   eCount = (eCount * 256) + byte2;
@@ -1528,9 +1534,9 @@ void PRIZM::resetEncoder(int channel)
     channel = 0x4D;
   } // channel 2 encoder reset command
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1546,27 +1552,27 @@ void EXPANSION::resetEncoder(int address, int channel)
     channel = 0x4D;
   } // channel 2 encoder reset command
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void PRIZM::resetEncoders()
 { // ================== Reset BOTH PRIZM Encoders at once =========================
 
-  Wire.beginTransmission(5);
-  Wire.write(0x4E);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(0x4E);
+  Wire1.endTransmission();
   delay(10);
 }
 
 void EXPANSION::resetEncoders(int address)
 { // ================== Reset BOTH EXPANSIONANSION Encoders at once =========================
 
-  Wire.beginTransmission(address);
-  Wire.write(0x4E);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(0x4E);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1585,13 +1591,13 @@ int PRIZM::readMotorBusy(int channel)
     channel = 0x50;
   } // channel 2 busy flag
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(5, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(5, 1);
+  byte1 = Wire1.read();
   MotorStatus = byte1;
   delay(10);
 
@@ -1613,13 +1619,13 @@ int EXPANSION::readMotorBusy(int address, int channel)
     channel = 0x50;
   } // channel 2 busy flag
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(address, 1);
-  byte1 = Wire.read();
+  Wire1.requestFrom(address, 1);
+  byte1 = Wire1.read();
   MotorStatus = byte1;
   delay(10);
 
@@ -1643,14 +1649,14 @@ int PRIZM::readMotorCurrent(int channel)
     channel = 0x55;
   } // read DC motor 2 current
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(5, 2);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
+  Wire1.requestFrom(5, 2);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
   Mcurrent = byte1;
   Mcurrent = (Mcurrent * 256) + byte2;
   delay(10);
@@ -1675,14 +1681,14 @@ int EXPANSION::readMotorCurrent(int address, int channel)
     channel = 0x55;
   } // read DC motor 2 current
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.endTransmission();
   delay(10);
 
-  Wire.requestFrom(address, 2);
-  byte1 = Wire.read();
-  byte2 = Wire.read();
+  Wire1.requestFrom(address, 2);
+  byte1 = Wire1.read();
+  byte2 = Wire1.read();
   Mcurrent = byte1;
   Mcurrent = (Mcurrent * 256) + byte2;
   delay(10);
@@ -1702,10 +1708,10 @@ void PRIZM::setMotorInvert(int channel, int invert)
     channel = 0x52;
   } // channel 2
 
-  Wire.beginTransmission(5);
-  Wire.write(channel);
-  Wire.write(invert);
-  Wire.endTransmission();
+  Wire1.beginTransmission(5);
+  Wire1.write(channel);
+  Wire1.write(invert);
+  Wire1.endTransmission();
   delay(10);
 }
 
@@ -1721,10 +1727,10 @@ void EXPANSION::setMotorInvert(int address, int channel, int invert)
     channel = 0x52;
   } // channel 2
 
-  Wire.beginTransmission(address);
-  Wire.write(channel);
-  Wire.write(invert);
-  Wire.endTransmission();
+  Wire1.beginTransmission(address);
+  Wire1.write(channel);
+  Wire1.write(invert);
+  Wire1.endTransmission();
   delay(10);
 }
 
