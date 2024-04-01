@@ -28,8 +28,7 @@
 
 class PRIZM
 {
-	public:
-	
+	public:	
 		int lastPosition_1 = 90;		// these hold the current 'last' positions of each servo channel
 		int lastPosition_2 = 90;
 		int lastPosition_3 = 90;
@@ -121,13 +120,6 @@ class EXPANSION
 		
 		int readDCFirmware(int address);
 		int readSVOFirmware(int address);
-
-		void setServoSpeed(int address, int channel, int servospeed);
-		void setServoSpeeds(int address, int servospeed1, int servospeed2, int servospeed3, int servospeed4, int servospeed5, int servospeed6);
-		void setServoPosition (int address, int channel, int servoposition);
-		void setServoPositions (int address, int servoposition1,int servoposition2,int servoposition3,int servoposition4,int servoposition5,int servoposition6);
-		void setCRServoState (int address, int channel, int servospeed);
-		int readServoPosition (int address, int channel);
 		
 	private:
 		

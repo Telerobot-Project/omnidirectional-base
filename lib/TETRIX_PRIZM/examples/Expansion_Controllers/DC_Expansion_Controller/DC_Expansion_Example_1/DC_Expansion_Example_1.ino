@@ -45,7 +45,9 @@ void loop() {
   exc.setMotorPowers(1,50,-50);     // Set the power of motor 1 to 50% and motor 2 to -50%. First number "1" is controller ID#.
   delay(2000);                      // wait here 2 seconds while motors spin
   exc.setMotorPowers(1,125,125);    // Stop motors(0 = coast stop; 125 = brake stop)
-  delay(1000);                      // wait here 1 second, then repeat
+  delay(1000);  
+  
+  // exc.re                    // wait here 1 second, then repeat
 
 }
 
