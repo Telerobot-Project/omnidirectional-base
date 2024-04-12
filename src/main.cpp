@@ -42,12 +42,8 @@ void loop()
     {
       base.speed = command.substring(5, 7).toInt();
       base.direction = command.substring(8, 11).toInt();
-      base.move(base.direction, base.speed, 0);
-    }
-    if (command.startsWith("STOP"))
-    {
-      base.speed = 0;
-      base.direction = 0;
+      base.turn_speed = command.substring(12, 15).toInt();
+      base.move(base.direction, base.speed, base.turn_speed);
     }
   }
 

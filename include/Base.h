@@ -14,7 +14,7 @@ public:
   void move(float, float, float);
   void avoidObjects();
 
-  double speed = 0, direction = 0;
+  double speed = 0, direction = 0, turn_speed = 0;
 };
 
 void Base::init()
@@ -36,8 +36,8 @@ void Base::move(float direction, float speed, float correction = 0)
   float v_x = sin(direction) * speed;
   float v_y = cos(direction) * speed;
   float v_fl = (v_x - v_y - (l_x + l_y) * correction) / r / M_PI * 180.0;
-  float v_fr = (v_x + v_y + (l_x + l_y) * correction) / r / M_PI * 180.0;
-  float v_bl = (v_x + v_y - (l_x + l_y) * correction) / r / M_PI * 180.0;
+  float v_fr = (v_x + v_y - (l_x + l_y) * correction) / r / M_PI * 180.0;
+  float v_bl = (v_x + v_y + (l_x + l_y) * correction) / r / M_PI * 180.0;
   float v_br = (v_x - v_y + (l_x + l_y) * correction) / r / M_PI * 180.0;
   this->exp->setMotorSpeeds(3, v_fr, v_fl);
   this->exp->setMotorSpeeds(1, -v_bl, -v_br);

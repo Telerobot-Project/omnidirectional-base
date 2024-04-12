@@ -19,7 +19,9 @@ public:
 
 void Gyro::init()
 {
+  Serial.println("Initialize Wire");
   Wire.begin();
+  Serial.println("Initialize MPU6050");
   mpu->initialize();
   mpu->dmpInitialize();
   mpu->CalibrateGyro(6);
